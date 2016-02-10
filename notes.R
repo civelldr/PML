@@ -89,4 +89,35 @@ nsv <- nearZeroVar(training, saveMetrics=TRUE)
 nsv # i.e. sex is mostly males and region is only one region
 
 # spline fitting
+library(splines)
+bsBasis <- bs(training$age, df=3) # 3rd degree polynomial
+head(bsBasis)
+# age, age^2, age^3
 
+lm <- lm(wage ~ bsBasis, data=training)
+plot(training$age, training$wage, pch=19, cex=0.5)
+points(training$age, predict(lm, newdata=training), col="red", pch=19, cex=0.5)
+
+predict(bsBasis, age=testing$age) # predict from the bsBasis from the training set
+
+# proprocessing with PCA.  when you don't want to include all the variables
+# if some of the variables are highly correlated
+
+data(spam)
+inTrain <- createDataPartition(y=spam$type, p=0.75, list=FALSE)
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+
+# calculate the correlation between all the covariates (leaving out one)
+M <- abs(cor(training[,-58]))
+diag(M) <- 0
+which(M > 0.8, arr.ind = T)
+names(spam)[c(34,32)]
+plot(spam[,34], spam[,32]) # right on the diagnoal
+
+# one way to visualize the contribution of each variable is to rotate the plot
+
+x <- 0.71*training$num415 + 0.71*training$num857
+y <- 0.71*training$num415 - 0.71*training$num857
+plot(x,y) # here you can the X is spread out, but the Y is mostly clustered near zero, 
+# so adding the numbers gives you more information than subtracting the values
